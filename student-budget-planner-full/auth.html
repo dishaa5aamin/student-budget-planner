@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Login / Register — Student Budget Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,300;9..144,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#030F08;color:#E8FAF2;min-height:100vh;display:flex;overflow:hidden}
+.mesh{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 80% 60% at 10% 20%,rgba(0,214,143,.18) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 50% at 90% 80%,rgba(0,212,200,.12) 0%,transparent 60%)}
+
+/* SPLIT */
+.left-panel{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:3rem;position:relative;z-index:1;
+}
+.right-panel{
+  width:420px;flex-shrink:0;background:rgba(15,30,22,.95);
+  border-left:1px solid rgba(0,214,143,.12);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:2.5rem;position:relative;z-index:1;overflow-y:auto;
+}
+
+/* LEFT */
+.brand-lg{display:flex;align-items:center;gap:12px;margin-bottom:3rem}
+.brand-orb{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#00D68F,#00D4C8);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,214,143,.4)}
+.brand-orb i{color:#fff;font-size:21px}
+.brand-name{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:#E8FAF2}
+.brand-name small{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:500;color:rgba(232,250,242,.4);margin-top:1px}
+.hero-left h1{font-family:'Fraunces',serif;font-size:clamp(32px,4vw,52px);font-weight:700;line-height:1.12;margin-bottom:1rem}
+.hero-left h1 .g{background:linear-gradient(135deg,#00D68F,#00D4C8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-left p{font-size:16px;color:rgba(232,250,242,.55);line-height:1.7;max-width:440px;margin-bottom:2.5rem}
+.feat-pills{display:flex;flex-direction:column;gap:.65rem}
+.fp{display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(232,250,242,.7);font-weight:500}
+.fp-dot{width:24px;height:24px;border-radius:7px;background:rgba(0,214,143,.14);border:1px solid rgba(0,214,143,.22);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fp-dot i{font-size:13px;color:#00D68F}
+
+/* RIGHT — FORM */
+.tab-row{display:flex;background:rgba(0,214,143,.06);border:1px solid rgba(0,214,143,.14);border-radius:12px;padding:4px;margin-bottom:1.75rem;width:100%}
+.tab{flex:1;text-align:center;padding:9px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;color:rgba(232,250,242,.5);transition:all .18s}
+.tab.active{background:linear-gradient(135deg,#00D68F,#00B87A);color:#fff;box-shadow:0 3px 12px rgba(0,214,143,.35)}
+.auth-form{width:100%;display:none}
+.auth-form.active{display:block;animation:fadeUp .3s ease}
+.form-title{font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:#E8FAF2;margin-bottom:.3rem}
+.form-sub{font-size:13px;color:rgba(232,250,242,.45);margin-bottom:1.5rem;line-height:1.5}
+.fl{display:block;font-size:12.5px;font-weight:700;color:rgba(232,250,242,.7);margin-bottom:.35rem;letter-spacing:.1px}
+.fc{
+  width:100%;padding:10px 13px;border:1.5px solid rgba(0,214,143,.18);border-radius:9px;
+  font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;
+  background:rgba(0,214,143,.04);color:#E8FAF2;outline:none;transition:border-color .18s,box-shadow .18s;margin-bottom:1rem;
+}
+.fc:focus{border-color:#00D68F;box-shadow:0 0 0 4px rgba(0,214,143,.12)}
+.fc::placeholder{color:rgba(232,250,242,.25)}
+.fc-icon-wrap{position:relative}
+.fc-icon-wrap .fc{padding-left:38px}
+.fc-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:rgba(232,250,242,.3);font-size:16px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.fg{margin-bottom:.1rem}
+.btn-submit{
+  width:100%;padding:12px;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;border:none;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:linear-gradient(135deg,#00D68F,#00B87A);color:#fff;
+  box-shadow:0 6px 22px rgba(0,214,143,.35);transition:all .18s;margin-top:.25rem;
+}
+.btn-submit:hover{box-shadow:0 8px 30px rgba(0,214,143,.5);transform:translateY(-1px)}
+.divider-or{display:flex;align-items:center;gap:.75rem;margin:1.25rem 0;font-size:12px;color:rgba(232,250,242,.3);font-weight:600}
+.divider-or::before,.divider-or::after{content:'';flex:1;height:1px;background:rgba(0,214,143,.12)}
+.btn-google{
+  width:100%;padding:11px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;
+  border:1.5px solid rgba(232,250,242,.14);background:rgba(232,250,242,.04);
+  color:rgba(232,250,242,.8);font-family:'Plus Jakarta Sans',sans-serif;
+  display:flex;align-items:center;justify-content:center;gap:9px;transition:all .15s;
+}
+.btn-google:hover{background:rgba(232,250,242,.08);border-color:rgba(232,250,242,.25)}
+.forgot-link{text-align:right;font-size:12px;color:#00D68F;cursor:pointer;font-weight:600;margin-top:-0.6rem;margin-bottom:.9rem;display:block}
+.forgot-link:hover{opacity:.8}
+.terms{font-size:11.5px;color:rgba(232,250,242,.3);text-align:center;margin-top:1rem;line-height:1.6}
+.terms a{color:#00D68F;cursor:pointer}
+.input-error{border-color:rgba(240,68,56,.6)!important}
+.error-msg{font-size:11.5px;color:#F04438;margin-top:-0.7rem;margin-bottom:.5rem;display:none}
+.strength{height:4px;border-radius:2px;margin-top:-0.7rem;margin-bottom:.7rem;background:rgba(0,214,143,.08);overflow:hidden}
+.strength-fill{height:100%;border-radius:2px;transition:width .3s,background .3s}
+.forgot-form{display:none}
+.forgot-form.show{display:block;animation:fadeUp .25s ease}
+.back-btn{font-size:12px;color:#00D68F;cursor:pointer;font-weight:700;display:flex;align-items:center;gap:4px;margin-bottom:1rem;background:none;border:none;font-family:'Plus Jakarta Sans',sans-serif}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:768px){
+  body{flex-direction:column;overflow-y:auto}
+  .left-panel{display:none}
+  .right-panel{width:100%;min-height:100vh;border-left:none;padding:2rem 1.5rem}
+}
+</style>
+</head>
+<body>
+<div class="mesh"></div>
+<div class="left-panel">
+  <a href="index.html" class="brand-lg" style="text-decoration:none">
+    <div class="brand-orb"><i class="ti ti-wallet"></i></div>
+    <div class="brand-name">Student Budget Planner<small>Smart money for students</small></div>
+  </a>
+  <div class="hero-left">
+    <h1>Manage your money,<br><span class="g">build your future</span></h1>
+    <p>Join thousands of students who track their spending, save smarter, and achieve financial goals with our free platform.</p>
+    <div class="feat-pills">
+      <div class="fp"><div class="fp-dot"><i class="ti ti-chart-bar"></i></div>Smart expense tracking & reports</div>
+      <div class="fp"><div class="fp-dot"><i class="ti ti-target"></i></div>Visual savings goals with deadlines</div>
+      <div class="fp"><div class="fp-dot"><i class="ti ti-brain"></i></div>AI-powered spending insights</div>
+      <div class="fp"><div class="fp-dot"><i class="ti ti-trophy"></i></div>Gamified rewards & challenges</div>
+      <div class="fp"><div class="fp-dot"><i class="ti ti-lock"></i></div>100% free, private & secure</div>
+    </div>
+  </div>
+</div>
+
+<div class="right-panel">
+  <!-- FORGOT PASSWORD -->
+  <div class="forgot-form" id="forgotForm">
+    <button class="back-btn" onclick="showForgot(false)"><i class="ti ti-arrow-left"></i>Back to login</button>
+    <div class="form-title">Reset Password</div>
+    <div class="form-sub">Enter your registered email and we'll send a reset link.</div>
+    <label class="fl">Email address</label>
+    <div class="fc-icon-wrap">
+      <i class="ti ti-mail fc-icon"></i>
+      <input type="email" class="fc" id="forgotEmail" placeholder="you@college.edu">
+    </div>
+    <button class="btn-submit" onclick="sendReset()">Send Reset Link</button>
+  </div>
+
+  <!-- LOGIN / REGISTER TABS -->
+  <div id="authForms" style="width:100%">
+    <div class="tab-row">
+      <div class="tab active" id="tabLogin" onclick="switchTab('login')">Login</div>
+      <div class="tab" id="tabRegister" onclick="switchTab('register')">Register</div>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div class="auth-form active" id="loginForm">
+      <div class="form-title">Welcome back! 👋</div>
+      <div class="form-sub">Log in to continue your financial journey</div>
+      <label class="fl">Email address</label>
+      <div class="fc-icon-wrap">
+        <i class="ti ti-mail fc-icon"></i>
+        <input type="email" class="fc" id="loginEmail" placeholder="you@college.edu">
+      </div>
+      <label class="fl">Password</label>
+      <div class="fc-icon-wrap">
+        <i class="ti ti-lock fc-icon"></i>
+        <input type="password" class="fc" id="loginPass" placeholder="Your password" id="loginPass">
+      </div>
+      <span class="forgot-link" onclick="showForgot(true)">Forgot password?</span>
+      <button class="btn-submit" onclick="doLogin()">Login to Dashboard</button>
+      <div class="divider-or">or continue with</div>
+      <button class="btn-google" onclick="googleLogin()">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continue with Google
+      </button>
+      <div class="terms">By logging in you agree to our <a>Terms of Service</a> & <a>Privacy Policy</a></div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div class="auth-form" id="registerForm">
+      <div class="form-title">Create account 🎓</div>
+      <div class="form-sub">Start your financial journey — it's completely free</div>
+      <div class="row2">
+        <div class="fg">
+          <label class="fl">First name</label>
+          <input type="text" class="fc" id="regFirst" placeholder="Priya">
+        </div>
+        <div class="fg">
+          <label class="fl">Last name</label>
+          <input type="text" class="fc" id="regLast" placeholder="Sharma">
+        </div>
+      </div>
+      <label class="fl">Email address</label>
+      <div class="fc-icon-wrap">
+        <i class="ti ti-mail fc-icon"></i>
+        <input type="email" class="fc" id="regEmail" placeholder="you@college.edu">
+      </div>
+      <label class="fl">College / University</label>
+      <div class="fc-icon-wrap">
+        <i class="ti ti-school fc-icon"></i>
+        <input type="text" class="fc" id="regCollege" placeholder="IIT Bombay">
+      </div>
+      <label class="fl">Password</label>
+      <div class="fc-icon-wrap">
+        <i class="ti ti-lock fc-icon"></i>
+        <input type="password" class="fc" id="regPass" placeholder="Create a strong password" oninput="checkStrength(this.value)">
+      </div>
+      <div class="strength"><div class="strength-fill" id="strengthFill" style="width:0%;background:#F04438"></div></div>
+      <label class="fl">Confirm password</label>
+      <div class="fc-icon-wrap">
+        <i class="ti ti-lock-check fc-icon"></i>
+        <input type="password" class="fc" id="regPass2" placeholder="Repeat your password">
+      </div>
+      <button class="btn-submit" onclick="doRegister()"><i class="ti ti-rocket" style="font-size:16px"></i> Create My Account</button>
+      <div class="divider-or">or</div>
+      <button class="btn-google" onclick="googleLogin()">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Sign up with Google
+      </button>
+      <div class="terms">By creating an account you agree to our <a>Terms of Service</a> & <a>Privacy Policy</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(t) {
+  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.auth-form').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('active');
+  document.getElementById(t+'Form').classList.add('active');
+}
+function showForgot(show) {
+  document.getElementById('forgotForm').style.display = show?'block':'none';
+  document.getElementById('authForms').style.display = show?'none':'block';
+}
+function checkStrength(val) {
+  const fill = document.getElementById('strengthFill');
+  let score = 0;
+  if(val.length>=8) score++;
+  if(/[A-Z]/.test(val)) score++;
+  if(/[0-9]/.test(val)) score++;
+  if(/[^A-Za-z0-9]/.test(val)) score++;
+  const pcts=['0%','25%','50%','75%','100%'];
+  const colors=['#F04438','#F04438','#F59E0B','#00D68F','#00D68F'];
+  fill.style.width=pcts[score]; fill.style.background=colors[score];
+}
+function saveProfileAndGo(name, college) {
+  const p = JSON.parse(localStorage.getItem('sbp_profile')||'{}');
+  p.name = name; p.college = college || '';
+  localStorage.setItem('sbp_profile', JSON.stringify(p));
+  window.location.href = 'app.html';
+}
+function doLogin() {
+  const email = document.getElementById('loginEmail').value;
+  const pass = document.getElementById('loginPass').value;
+  if(!email||!pass){ showToast('Please fill in all fields','#F04438'); return; }
+  showToast('Logging in...','#00D68F');
+  setTimeout(()=>{ window.location.href='app.html'; }, 800);
+}
+function doRegister() {
+  const first = document.getElementById('regFirst').value.trim();
+  const last = document.getElementById('regLast').value.trim();
+  const college = document.getElementById('regCollege').value.trim();
+  const pass = document.getElementById('regPass').value;
+  const pass2 = document.getElementById('regPass2').value;
+  if(!first||!last||!document.getElementById('regEmail').value){ showToast('Please fill in all fields','#F04438'); return; }
+  if(pass!==pass2){ showToast('Passwords do not match','#F04438'); return; }
+  if(pass.length<6){ showToast('Password must be at least 6 characters','#F04438'); return; }
+  saveProfileAndGo(first+' '+last, college);
+}
+function googleLogin() {
+  showToast('Redirecting to Google...','#3B82F6');
+  setTimeout(()=>saveProfileAndGo('Google User',''),600);
+}
+function sendReset() {
+  const e=document.getElementById('forgotEmail').value;
+  if(!e){ showToast('Enter your email','#F04438'); return; }
+  showToast('Reset link sent! Check your inbox ✉️','#00D68F');
+  setTimeout(()=>showForgot(false),1500);
+}
+function showToast(msg,color) {
+  const t=document.createElement('div');
+  t.style.cssText=`position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;background:${color};color:#fff;padding:.7rem 1.1rem;border-radius:10px;font-size:13px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.3);animation:fadeUp .2s ease`;
+  t.textContent=msg; document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2500);
+}
+// check if hash = register
+if(window.location.hash==='#register') switchTab('register');
+</script>
+</body>
+</html>

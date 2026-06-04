@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>App — Student Budget Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,300;9..144,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="shared.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+/* ── EXTRA APP STYLES ── */
+.welcome-banner{
+  background:linear-gradient(135deg,#005C3C 0%,#007A50 40%,#00D4C8 100%);
+  border-radius:var(--radius);padding:1.5rem 1.75rem;margin-bottom:1.6rem;
+  position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(0,92,60,.3);
+}
+.welcome-banner::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.07)}
+.welcome-banner::after{content:'';position:absolute;bottom:-25px;right:120px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.04)}
+.wb-title{font-family:'Fraunces',serif;font-size:21px;font-weight:700;color:#fff;margin-bottom:.3rem}
+.wb-sub{font-size:13px;color:rgba(255,255,255,.72);line-height:1.5;max-width:520px}
+.wb-actions{display:flex;gap:.6rem;margin-top:1rem;flex-wrap:wrap}
+.wb-btn{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.28);padding:7px 15px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s;font-family:'Plus Jakarta Sans',sans-serif;backdrop-filter:blur(8px)}
+.wb-btn:hover{background:rgba(255,255,255,.25)}
+.wb-btn-solid{background:#fff;color:#005C3C}
+.wb-btn-solid:hover{background:rgba(255,255,255,.9)}
+
+/* ── CATEGORY BARS ── */
+.cbar{display:flex;align-items:center;gap:10px;padding:.55rem .7rem;border-radius:10px;background:var(--surface2);transition:background .15s;margin-bottom:.55rem}
+.cbar:hover{background:rgba(0,214,143,.07)}
+.cdot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.clab{flex:1;font-size:13px;font-weight:600;color:var(--text)}
+.cbar-wrap{flex:2;height:7px;background:var(--bg2);border-radius:4px;overflow:hidden}
+.cbar-fill{height:100%;border-radius:4px;transition:width .7s cubic-bezier(.4,0,.2,1)}
+.camt{font-size:12.5px;font-weight:700;color:var(--text2);min-width:76px;text-align:right}
+
+/* ── GOAL CARDS ── */
+.goal-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.35rem;box-shadow:var(--shadow);transition:transform .2s,box-shadow .22s;animation:fadeUp .3s ease;position:relative;overflow:hidden}
+.goal-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+.goal-card-shine{position:absolute;top:0;right:0;width:80px;height:80px;border-radius:50%;filter:blur(28px);opacity:.15;pointer-events:none}
+.goal-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.9rem;gap:.5rem}
+.goal-emo{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(0,214,143,.1);border:1px solid var(--border2);flex-shrink:0}
+.goal-name{font-size:15px;font-weight:800}
+.goal-sub{font-size:12px;color:var(--text3);margin-top:2px}
+
+/* ── INSIGHT CARDS ── */
+.insight{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow);display:flex;gap:13px;align-items:flex-start}
+.insight-ico{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.insight-ico i{font-size:22px}
+.insight-title{font-size:14px;font-weight:800;margin-bottom:.3rem}
+.insight-body{font-size:13px;color:var(--text2);line-height:1.6}
+
+/* ── TIP CARDS ── */
+.tip-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.4rem;box-shadow:var(--shadow);transition:all .2s}
+.tip-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.tip-num{font-family:'Fraunces',serif;font-size:36px;font-weight:700;color:var(--border2);line-height:1;margin-bottom:.6rem}
+.tip-title{font-size:15px;font-weight:800;margin-bottom:.4rem}
+.tip-body{font-size:13px;color:var(--text2);line-height:1.7}
+.tip-tag{display:inline-block;margin-top:.75rem;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+
+/* ── REWARDS ── */
+.challenge-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.35rem;box-shadow:var(--shadow);transition:all .2s;position:relative;overflow:hidden}
+.challenge-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.badge-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;text-align:center;box-shadow:var(--shadow);transition:all .2s}
+.badge-card:hover{transform:translateY(-3px)}
+.badge-icon{font-size:36px;margin-bottom:.5rem;display:block}
+.badge-name{font-size:13px;font-weight:800}
+.badge-desc{font-size:11.5px;color:var(--text3);margin-top:2px}
+.badge-card.locked{opacity:.45;filter:grayscale(.8)}
+
+/* ── PROFILE ── */
+.profile-header{
+  background:linear-gradient(135deg,var(--g4),var(--g3),var(--teal));
+  border-radius:var(--radius);padding:2rem;margin-bottom:1.5rem;
+  position:relative;overflow:hidden;box-shadow:var(--shadow-md);
+}
+.profile-header::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.06)}
+.ph-inner{display:flex;align-items:center;gap:1.5rem;position:relative}
+.ph-avatar{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.2);border:3px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:#fff;cursor:pointer;flex-shrink:0;overflow:hidden}
+.ph-avatar img{width:100%;height:100%;object-fit:cover}
+.ph-name{font-family:'Fraunces',serif;font-size:24px;font-weight:700;color:#fff}
+.ph-college{font-size:14px;color:rgba(255,255,255,.75);margin-top:3px}
+.ph-badges-row{display:flex;gap:.5rem;margin-top:.65rem;flex-wrap:wrap}
+.ph-badge{background:rgba(255,255,255,.18);color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px}
+
+/* ── SETTINGS ── */
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:.9rem 0;border-bottom:1px solid var(--border);gap:1rem}
+.setting-row:last-child{border-bottom:none}
+.setting-label{font-size:14px;font-weight:700}
+.setting-desc{font-size:12px;color:var(--text3);margin-top:2px}
+.toggle{width:44px;height:24px;border-radius:12px;background:var(--bg2);border:1px solid var(--border2);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;outline:none;border:none}
+.toggle.on{background:var(--g1)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.toggle.on::after{transform:translateX(20px)}
+.leaderboard-row{display:flex;align-items:center;gap:12px;padding:.7rem 0;border-bottom:1px solid var(--border)}
+.leaderboard-row:last-child{border-bottom:none}
+.lb-rank{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+
+/* ── AI CHAT ── */
+.chat-messages{height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:.75rem;padding:.5rem 0;scroll-behavior:smooth}
+.chat-messages::-webkit-scrollbar{width:3px}
+.chat-msg{max-width:82%;padding:.8rem 1rem;border-radius:16px;font-size:13.5px;line-height:1.6;animation:fadeUp .2s ease}
+.chat-msg.ai{background:rgba(0,214,143,.08);border:1px solid var(--border2);border-bottom-left-radius:4px;color:var(--text);align-self:flex-start}
+.chat-msg.user{background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.chat-input-row{display:flex;gap:.6rem;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)}
+.chat-quick{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem}
+.qchip{background:rgba(0,214,143,.07);border:1px solid var(--border2);border-radius:20px;padding:4px 11px;font-size:12px;font-weight:600;color:var(--g3);cursor:pointer;transition:all .15s}
+.qchip:hover{background:rgba(0,214,143,.15);border-color:var(--g1)}
+.typing{display:flex;gap:4px;align-items:center;padding:.5rem}
+.typing span{width:7px;height:7px;border-radius:50%;background:var(--g1);animation:bounce .8s infinite}
+.typing span:nth-child(2){animation-delay:.15s}
+.typing span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+
+/* ── TABLE ── */
+.exp-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.exp-table th{text-align:left;padding:.65rem .85rem;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);border-bottom:2px solid var(--border2);background:var(--surface2)}
+.exp-table td{padding:.7rem .85rem;border-bottom:1px solid var(--border);vertical-align:middle}
+.exp-table tr:last-child td{border-bottom:none}
+.exp-table tr:hover td{background:rgba(0,214,143,.03)}
+.exp-table th:first-child,.exp-table td:first-child{border-radius:0}
+
+/* ── SEARCH BAR ── */
+.search-bar{position:relative;flex:1}
+.search-bar input{width:100%;padding:9px 13px 9px 38px;border:1.5px solid var(--border2);border-radius:9px;background:var(--surface);color:var(--text);font-size:13.5px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:border-color .18s}
+.search-bar input:focus{border-color:var(--g1);box-shadow:0 0 0 3px rgba(0,214,143,.1)}
+.search-bar input::placeholder{color:var(--text4)}
+.search-bar i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:16px;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="mesh-bg"></div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo">
+      <div class="sb-icon"><i class="ti ti-wallet"></i></div>
+      <div class="sb-title">Student Budget<small>Planner · 2026</small></div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">Overview</div>
+    <a class="sb-item active" onclick="showPage('dashboard',this)"><i class="ti ti-layout-dashboard"></i>Dashboard</a>
+    <div class="sb-section">Finances</div>
+    <a class="sb-item" onclick="showPage('income',this)"><i class="ti ti-arrow-down-circle"></i>Income</a>
+    <a class="sb-item" onclick="showPage('expenses',this)"><i class="ti ti-receipt-2"></i>Expenses</a>
+    <a class="sb-item" onclick="showPage('goals',this)"><i class="ti ti-target"></i>Savings Goals</a>
+    <div class="sb-section">Analytics</div>
+    <a class="sb-item" onclick="showPage('reports',this)"><i class="ti ti-chart-bar"></i>Reports</a>
+    <a class="sb-item" onclick="showPage('ai',this)"><i class="ti ti-brain"></i>AI Assistant<span class="sb-badge new">AI</span></a>
+    <div class="sb-section">Personal</div>
+    <a class="sb-item" onclick="showPage('rewards',this)"><i class="ti ti-trophy"></i>Rewards<span class="sb-badge">🏆</span></a>
+    <a class="sb-item" onclick="showPage('tips',this)"><i class="ti ti-bulb"></i>Finance Tips</a>
+    <a class="sb-item" onclick="showPage('profile',this)"><i class="ti ti-user-circle"></i>My Profile</a>
+    <a class="sb-item" onclick="showPage('settings',this)"><i class="ti ti-settings"></i>Settings</a>
+    <div class="sb-section">Account</div>
+    <a class="sb-item" href="index.html"><i class="ti ti-home"></i>Home Page</a>
+    <a class="sb-item" href="auth.html" style="color:var(--red)"><i class="ti ti-logout"></i>Logout</a>
+  </nav>
+  <div class="sb-footer">
+    <div class="sb-user" onclick="showPage('profile',document.querySelector('[onclick*=profile]'))">
+      <div class="sb-avatar" id="sbAvatar">S</div>
+      <div><div class="sb-uname" id="sbName">Student</div><div class="sb-urole">Budget Tracker</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <div class="tb-left">
+      <button class="menu-btn" onclick="openSidebar()"><i class="ti ti-menu-2"></i></button>
+      <h1 class="tb-title" id="pageTitle">Dashboard</h1>
+    </div>
+    <div class="tb-right">
+      <div class="tb-chip"><i class="ti ti-calendar"></i><span id="monthLabel"></span></div>
+      <div class="tb-btn" onclick="openModal('expenseModal')" title="Quick add expense"><i class="ti ti-plus"></i></div>
+      <div class="tb-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme"><i class="ti ti-moon" id="themeIcon"></i></div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ══════════ DASHBOARD ══════════ -->
+    <div class="page active" id="page-dashboard">
+      <div class="welcome-banner" id="wbanner">
+        <div class="wb-title">Welcome back! 👋 <span id="wbName"></span></div>
+        <div class="wb-sub">Your financial dashboard is ready. Add income and expenses to get started on your money journey.</div>
+        <div class="wb-actions">
+          <button class="wb-btn wb-btn-solid" onclick="openModal('incomeModal')"><i class="ti ti-plus"></i>Add Income</button>
+          <button class="wb-btn" onclick="openModal('expenseModal')"><i class="ti ti-receipt-2"></i>Log Expense</button>
+          <button class="wb-btn" onclick="showPage('goals',document.querySelectorAll('.sb-item')[3])"><i class="ti ti-target"></i>Set Goal</button>
+          <button class="wb-btn" onclick="showPage('ai',document.querySelectorAll('.sb-item')[5])"><i class="ti ti-brain"></i>AI Advice</button>
+        </div>
+      </div>
+      <div class="metrics-grid" id="dashMetrics"></div>
+      <div class="g2" style="margin-bottom:1.1rem">
+        <div class="card">
+          <div class="card-hd"><div class="card-title"><i class="ti ti-chart-donut-3"></i>Spending by Category</div><span id="dashCatMonth" style="font-size:12px;color:var(--text3)"></span></div>
+          <div id="dashCatBars"></div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><div class="card-title"><i class="ti ti-gauge"></i>Budget Health</div></div>
+          <div id="dashBudgetRing"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title"><i class="ti ti-clock"></i>Recent Transactions</div>
+          <button class="btn btn-ghost btn-sm" onclick="showPage('expenses',document.querySelectorAll('.sb-item')[2])">View all <i class="ti ti-arrow-right"></i></button>
+        </div>
+        <div id="dashRecent"></div>
+      </div>
+    </div>
+
+    <!-- ══════════ INCOME ══════════ -->
+    <div class="page" id="page-income">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem">
+        <div style="font-size:14px;color:var(--text2)">Track all your money sources</div>
+        <button class="btn btn-primary" onclick="openModal('incomeModal')"><i class="ti ti-plus"></i>Add Income</button>
+      </div>
+      <div class="metrics-grid">
+        <div class="mc" style="--stripe-c:var(--g1)"><div class="mc-stripe" style="background:linear-gradient(90deg,var(--g1),var(--lime))"></div><div class="mc-glow" style="background:var(--g1)"></div><div class="mc-label"><i class="ti ti-calendar-month" style="color:var(--g1)"></i>This Month</div><div class="mc-value" id="incMo" style="color:var(--g1)">₹0</div><div class="mc-sub">received</div></div>
+        <div class="mc"><div class="mc-stripe" style="background:linear-gradient(90deg,var(--teal),var(--blue))"></div><div class="mc-glow" style="background:var(--teal)"></div><div class="mc-label"><i class="ti ti-coins" style="color:var(--teal)"></i>All Time</div><div class="mc-value" id="incAll" style="color:var(--teal)">₹0</div><div class="mc-sub">total income</div></div>
+        <div class="mc"><div class="mc-stripe" style="background:linear-gradient(90deg,var(--purple),var(--pink))"></div><div class="mc-glow" style="background:var(--purple)"></div><div class="mc-label"><i class="ti ti-list-numbers" style="color:var(--purple)"></i>Entries</div><div class="mc-value" id="incCnt" style="color:var(--purple)">0</div><div class="mc-sub">this month</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-title"><i class="ti ti-history"></i>Income History</div></div>
+        <div id="incomeList"></div>
+      </div>
+    </div>
+
+    <!-- ══════════ EXPENSES ══════════ -->
+    <div class="page" id="page-expenses">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem">
+        <div style="font-size:14px;color:var(--text2)">Track and analyse every rupee spent</div>
+        <button class="btn btn-primary" onclick="openModal('expenseModal')"><i class="ti ti-plus"></i>Add Expense</button>
+      </div>
+      <div class="metrics-grid">
+        <div class="mc"><div class="mc-stripe" style="background:linear-gradient(90deg,var(--red),#FF8C94)"></div><div class="mc-glow" style="background:var(--red)"></div><div class="mc-label"><i class="ti ti-calendar-month" style="color:var(--red)"></i>This Month</div><div class="mc-value" id="expMo" style="color:var(--red)">₹0</div><div class="mc-sub">spent</div></div>
+        <div class="mc"><div class="mc-stripe" style="background:linear-gradient(90deg,var(--amber),#F97316)"></div><div class="mc-glow" style="background:var(--amber)"></div><div class="mc-label"><i class="ti ti-flame" style="color:var(--amber)"></i>Top Category</div><div class="mc-value" id="expTop" style="font-size:16px;padding-top:5px">—</div><div class="mc-sub">biggest spend</div></div>
+        <div class="mc"><div class="mc-stripe" style="background:linear-gradient(90deg,var(--purple),var(--pink))"></div><div class="mc-glow" style="background:var(--purple)"></div><div class="mc-label"><i class="ti ti-list" style="color:var(--purple)"></i>Transactions</div><div class="mc-value" id="expCnt" style="color:var(--purple)">0</div><div class="mc-sub">this month</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hd" style="flex-wrap:wrap;gap:.6rem">
+          <div class="card-title"><i class="ti ti-table"></i>Expense History</div>
+          <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+            <div class="search-bar" style="min-width:180px"><i class="ti ti-search"></i><input type="text" id="expSearch" placeholder="Search expenses..." oninput="renderExpenses()"></div>
+            <select class="fc" id="expCatFilter" onchange="renderExpenses()" style="width:auto;padding:8px 30px 8px 10px;font-size:13px;border-radius:9px">
+              <option value="">All categories</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="exp-table" id="expTable">
+            <thead><tr><th>Description</th><th>Category</th><th>Date</th><th>Amount</th><th></th></tr></thead>
+            <tbody id="expTableBody"></tbody>
+          </table>
+        </div>
+        <div id="expEmptyState"></div>
+      </div>
+    </div>
+
+    <!-- ══════════ GOALS ══════════ -->
+    <div class="page" id="page-goals">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem">
+        <div style="font-size:14px;color:var(--text2)">Set targets and save toward what matters</div>
+        <button class="btn btn-primary" onclick="openModal('goalModal')"><i class="ti ti-plus"></i>New Goal</button>
+      </div>
+      <div id="goalsList" class="g3"></div>
+    </div>
+
+    <!-- ══════════ REPORTS ══════════ -->
+    <div class="page" id="page-reports">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem">
+        <div style="font-size:14px;color:var(--text2)">Your complete financial picture</div>
+        <button class="btn btn-ghost btn-sm" onclick="exportPDF()"><i class="ti ti-file-download"></i>Download PDF</button>
+      </div>
+      <div class="metrics-grid" id="repMetrics"></div>
+      <div class="g2" style="margin-bottom:1.1rem">
+        <div class="card">
+          <div class="card-hd"><div class="card-title"><i class="ti ti-chart-bar"></i>Income vs Expenses</div><span style="font-size:11px;color:var(--text3)">Last 6 months</span></div>
+          <div class="chart-wrap" style="height:240px"><canvas id="trendChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><div class="card-title"><i class="ti ti-chart-pie"></i>Category Split</div></div>
+          <div class="chart-wrap" style="height:240px"><canvas id="pieChart"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-title"><i class="ti ti-report-analytics"></i>Summary Statistics</div></div>
+        <div id="repStats"></div>
+      </div>
+    </div>
+
+    <!-- ══════════ AI ASSISTANT ══════════ -->
+    <div class="page" id="page-ai">
+      <div class="g2" style="margin-bottom:1.1rem">
+        <div class="card" style="grid-column:1/-1">
+          <div class="card-hd">
+            <div>
+              <div class="card-title"><i class="ti ti-brain"></i>AI Budget Assistant</div>
+              <div class="card-sub">Powered by intelligent spending analysis</div>
+            </div>
+            <span class="badge b-green"><i class="ti ti-sparkles" style="font-size:10px"></i>Active</span>
+          </div>
+          <div class="chat-quick" id="chatQuick">
+            <div class="qchip" onclick="askAI('Analyse my spending habits')">📊 Analyse spending</div>
+            <div class="qchip" onclick="askAI('How can I save more money this month?')">💰 Save more tips</div>
+            <div class="qchip" onclick="askAI('Predict my expenses for next month')">🔮 Predict expenses</div>
+            <div class="qchip" onclick="askAI('What is my biggest wasteful expense?')">🔍 Find waste</div>
+            <div class="qchip" onclick="askAI('Give me a personalised budget plan')">📋 Budget plan</div>
+          </div>
+          <div class="chat-messages" id="chatMessages"></div>
+          <div class="chat-input-row">
+            <input type="text" class="fc" id="chatInput" placeholder="Ask me anything about your finances..." style="flex:1;margin-bottom:0" onkeydown="if(event.key==='Enter')sendChat()">
+            <button class="btn btn-primary btn-sm" onclick="sendChat()"><i class="ti ti-send"></i></button>
+          </div>
+        </div>
+      </div>
+      <div class="g2" id="aiInsightCards"></div>
+    </div>
+
+    <!-- ══════════ REWARDS ══════════ -->
+    <div class="page" id="page-rewards">
+      <div style="margin-bottom:1.5rem">
+        <div class="metrics-grid" id="rewardMetrics"></div>
+      </div>
+      <div class="g2" style="margin-bottom:1.1rem">
+        <div class="card">
+          <div class="card-hd"><div class="card-title"><i class="ti ti-bolt"></i>Weekly Challenges</div></div>
+          <div id="challengeList"></div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><div class="card-title"><i class="ti ti-award"></i>Achievement Badges</div></div>
+          <div class="g3" id="badgeGrid" style="gap:.6rem"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-title"><i class="ti ti-list-numbers"></i>Leaderboard</div><span class="badge b-amber">🏆 Top Savers</span></div>
+        <div id="leaderboard"></div>
+      </div>
+    </div>
+
+    <!-- ══════════ TIPS ══════════ -->
+    <div class="page" id="page-tips">
+      <div style="font-size:14px;color:var(--text2);margin-bottom:1.5rem">Expert money management advice for students</div>
+      <div class="g3" id="tipsList"></div>
+    </div>
+
+    <!-- ══════════ PROFILE ══════════ -->
+    <div class="page" id="page-profile">
+      <div class="profile-header">
+        <div class="ph-inner">
+          <div class="ph-avatar" id="profileAvatar" onclick="document.getElementById('avatarUpload').click()">S<input type="file" id="avatarUpload" accept="image/*" style="display:none" onchange="uploadAvatar(this)"></div>
+          <div>
+            <div class="ph-name" id="profileName">Student</div>
+            <div class="ph-college" id="profileCollege">College not set</div>
+            <div class="ph-badges-row" id="profileBadges"></div>
+          </div>
+        </div>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="card-hd"><div class="card-title"><i class="ti ti-user"></i>Personal Information</div></div>
+          <div class="fg"><label class="fl">Full Name</label><input type="text" class="fc" id="profName" placeholder="Your full name"></div>
+          <div class="fg"><label class="fl">College / University</label><input type="text" class="fc" id="profCollege" placeholder="College name"></div>
+          <div class="fg"><label class="fl">Course / Branch</label><input type="text" class="fc" id="profCourse" placeholder="e.g. B.Tech Computer Science"></div>
+          <div class="fg"><label class="fl">Year of Study</label>
+            <select class="fc" id="profYear"><option>1st Year</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option><option>Postgraduate</option></select>
+          </div>
+          <button class="btn btn-primary" onclick="saveProfile()"><i class="ti ti-check"></i>Save Profile</button>
+        </div>
+        <div class="card">
+          <div class="card-hd"><div class="card-title"><i class="ti ti-chart-bar"></i>My Stats</div></div>
+          <div id="profileStats"></div>
+          <div style="margin-top:1.25rem">
+            <div class="card-hd" style="margin-bottom:.75rem"><div class="card-title" style="font-size:13px"><i class="ti ti-medal"></i>Earned Badges</div></div>
+            <div id="profileBadgeList" class="g3" style="gap:.5rem"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ SETTINGS ══════════ -->
+    <div class="page" id="page-settings">
+      <div class="g2">
+        <div class="card">
+          <div class="card-hd"><div class="card-title"><i class="ti ti-palette"></i>Appearance</div></div>
+          <div class="setting-row">
+            <div><div class="setting-label">Dark Mode</div><div class="setting-desc">Switch between light and dark theme</div></div>
+            <button class="toggle" id="themeToggleSetting" onclick="toggleThemeSetting()"></button>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Currency Symbol</div><div class="setting-desc">Choose your preferred currency</div></div>
+            <select class="fc" id="currencySelect" style="width:90px;padding:6px 8px;font-size:13px" onchange="saveCurrency()">
+              <option value="₹">₹ INR</option><option value="$">$ USD</option><option value="€">€ EUR</option><option value="£">£ GBP</option>
+            </select>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><div class="card-title"><i class="ti ti-bell"></i>Notifications</div></div>
+          <div class="setting-row">
+            <div><div class="setting-label">Budget Alerts</div><div class="setting-desc">Notify when spending exceeds 80%</div></div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Weekly Summary</div><div class="setting-desc">Receive weekly spending report</div></div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Goal Reminders</div><div class="setting-desc">Remind to add savings to goals</div></div>
+            <button class="toggle" onclick="this.classList.toggle('on')"></button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><div class="card-title"><i class="ti ti-database"></i>Data & Backup</div></div>
+          <div class="setting-row">
+            <div><div class="setting-label">Export Data</div><div class="setting-desc">Download all your data as JSON</div></div>
+            <button class="btn btn-ghost btn-sm" onclick="exportData()"><i class="ti ti-download"></i>Export</button>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Import Data</div><div class="setting-desc">Restore from a backup file</div></div>
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importFile').click()"><i class="ti ti-upload"></i>Import</button>
+            <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
+          </div>
+          <div class="setting-row" style="border-bottom:none">
+            <div><div class="setting-label" style="color:var(--red)">Clear All Data</div><div class="setting-desc">Permanently delete all records</div></div>
+            <button class="btn btn-danger btn-sm" onclick="clearAllData()"><i class="ti ti-trash"></i>Clear</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><div class="card-title"><i class="ti ti-user-cog"></i>Account</div></div>
+          <div class="setting-row">
+            <div><div class="setting-label">Change Password</div><div class="setting-desc">Update your account password</div></div>
+            <button class="btn btn-ghost btn-sm">Change</button>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Monthly Budget Limit</div><div class="setting-desc">Set a monthly spending cap</div></div>
+            <div style="display:flex;gap:.4rem;align-items:center">
+              <input type="number" class="fc" id="budgetLimit" placeholder="0" style="width:90px;padding:6px 8px;font-size:13px">
+              <button class="btn btn-ghost btn-sm" onclick="saveBudgetLimit()">Set</button>
+            </div>
+          </div>
+          <div class="setting-row" style="border-bottom:none">
+            <div><div class="setting-label" style="color:var(--red)">Delete Account</div><div class="setting-desc">Permanently remove account</div></div>
+            <button class="btn btn-danger btn-sm"><i class="ti ti-user-x"></i>Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ════ MODALS ════ -->
+
+<!-- INCOME -->
+<div class="mo" id="incomeModal">
+  <div class="md">
+    <div class="md-hd"><div class="md-title">➕ Add Income</div><button class="md-close" onclick="closeModal('incomeModal')"><i class="ti ti-x"></i></button></div>
+    <div class="fg"><label class="fl">Description</label><input type="text" class="fc" id="incDesc" placeholder="e.g. Pocket money from parents"></div>
+    <div class="fc-row">
+      <div class="fg"><label class="fl">Amount</label><input type="number" class="fc" id="incAmt" placeholder="0" min="1"></div>
+      <div class="fg"><label class="fl">Date</label><input type="date" class="fc" id="incomeDate"></div>
+    </div>
+    <div class="fg"><label class="fl">Category</label>
+      <select class="fc" id="incCat">
+        <option>Pocket Money</option><option>Part-time Job</option><option>Scholarship</option>
+        <option>Freelance</option><option>Gift</option><option>Other</option>
+      </select>
+    </div>
+    <div class="fg"><label class="fl">Note (optional)</label><input type="text" class="fc" id="incNote" placeholder="Any extra details..."></div>
+    <div class="md-ft">
+      <button class="btn btn-outline" onclick="closeModal('incomeModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveIncome()"><i class="ti ti-check"></i>Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPENSE -->
+<div class="mo" id="expenseModal">
+  <div class="md">
+    <div class="md-hd"><div class="md-title">💸 Add Expense</div><button class="md-close" onclick="closeModal('expenseModal')"><i class="ti ti-x"></i></button></div>
+    <div class="fg"><label class="fl">Description</label><input type="text" class="fc" id="expDesc" placeholder="What did you spend on?"></div>
+    <div class="fc-row">
+      <div class="fg"><label class="fl">Amount</label><input type="number" class="fc" id="expAmt" placeholder="0" min="1"></div>
+      <div class="fg"><label class="fl">Date</label><input type="date" class="fc" id="expDate"></div>
+    </div>
+    <div class="fg"><label class="fl">Category</label>
+      <select class="fc" id="expCat">
+        <option>Food</option><option>Travel</option><option>Shopping</option><option>Education</option>
+        <option>Entertainment</option><option>Health</option><option>Utilities</option>
+        <option>Stationery</option><option>Other</option>
+      </select>
+    </div>
+    <div class="fg"><label class="fl">Note (optional)</label><input type="text" class="fc" id="expNote" placeholder="Any extra details..."></div>
+    <div class="md-ft">
+      <button class="btn btn-outline" onclick="closeModal('expenseModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveExpense()"><i class="ti ti-check"></i>Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT EXPENSE -->
+<div class="mo" id="editExpModal">
+  <div class="md">
+    <div class="md-hd"><div class="md-title">✏️ Edit Expense</div><button class="md-close" onclick="closeModal('editExpModal')"><i class="ti ti-x"></i></button></div>
+    <input type="hidden" id="editExpId">
+    <div class="fg"><label class="fl">Description</label><input type="text" class="fc" id="editExpDesc"></div>
+    <div class="fc-row">
+      <div class="fg"><label class="fl">Amount</label><input type="number" class="fc" id="editExpAmt"></div>
+      <div class="fg"><label class="fl">Date</label><input type="date" class="fc" id="editExpDate"></div>
+    </div>
+    <div class="fg"><label class="fl">Category</label>
+      <select class="fc" id="editExpCat">
+        <option>Food</option><option>Travel</option><option>Shopping</option><option>Education</option>
+        <option>Entertainment</option><option>Health</option><option>Utilities</option><option>Stationery</option><option>Other</option>
+      </select>
+    </div>
+    <div class="md-ft">
+      <button class="btn btn-outline" onclick="closeModal('editExpModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="updateExpense()"><i class="ti ti-check"></i>Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- GOAL -->
+<div class="mo" id="goalModal">
+  <div class="md">
+    <div class="md-hd"><div class="md-title">🎯 New Savings Goal</div><button class="md-close" onclick="closeModal('goalModal')"><i class="ti ti-x"></i></button></div>
+    <div class="fg"><label class="fl">Goal Name</label><input type="text" class="fc" id="gName" placeholder="e.g. New Laptop, Trip to Manali..."></div>
+    <div class="fc-row">
+      <div class="fg"><label class="fl">Target Amount</label><input type="number" class="fc" id="gTarget" placeholder="0" min="1"></div>
+      <div class="fg"><label class="fl">Emoji</label><input type="text" class="fc" id="gEmoji" placeholder="💻" maxlength="2"><div class="fhint">Any emoji</div></div>
+    </div>
+    <div class="fg"><label class="fl">Deadline (optional)</label><input type="date" class="fc" id="gDeadline"></div>
+    <div class="fg"><label class="fl">Description (optional)</label><input type="text" class="fc" id="gDesc" placeholder="Why are you saving for this?"></div>
+    <div class="md-ft">
+      <button class="btn btn-outline" onclick="closeModal('goalModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveGoal()"><i class="ti ti-target"></i>Create Goal</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD SAVINGS -->
+<div class="mo" id="savingsModal">
+  <div class="md">
+    <div class="md-hd"><div class="md-title">🐷 Add Savings</div><button class="md-close" onclick="closeModal('savingsModal')"><i class="ti ti-x"></i></button></div>
+    <input type="hidden" id="savGoalId">
+    <div class="fg"><label class="fl">Amount to Add</label><input type="number" class="fc" id="savAmt" placeholder="0" min="1"></div>
+    <div class="fg"><label class="fl">Note (optional)</label><input type="text" class="fc" id="savNote" placeholder="e.g. Monthly savings"></div>
+    <div class="md-ft">
+      <button class="btn btn-outline" onclick="closeModal('savingsModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addSavings()"><i class="ti ti-piggy-bank"></i>Add Savings</button>
+    </div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+/* ═══════ CONSTANTS ═══════ */
+const FULL_MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const now=new Date(), CY=now.getFullYear(), CM=now.getMonth();
+const GOAL_GRADS=['linear-gradient(135deg,#00D68F,#00B87A)','linear-gradient(135deg,#3B82F6,#06B6D4)','linear-gradient(135deg,#8B5CF6,#EC4899)','linear-gradient(135deg,#F59E0B,#EF4444)','linear-gradient(135deg,#10B981,#3B82F6)','linear-gradient(135deg,#EC4899,#8B5CF6)'];
+
+/* ═══════ INIT TOPBAR ═══════ */
+document.getElementById('monthLabel').textContent = FULL_MONTHS[CM]+' '+CY;
+
+/* ═══════ SIDEBAR USER ═══════ */
+function refreshSidebarUser(){
+  const p=DB.profile();
+  const n=p.name||'Student';
+  document.getElementById('sbName').textContent=n;
+  document.getElementById('sbAvatar').textContent=n.charAt(0).toUpperCase();
+  document.getElementById('wbName').textContent=n.split(' ')[0]+'!';
+}
+refreshSidebarUser();
+
+/* ═══════ INCOME ═══════ */
+function saveIncome(){
+  const desc=document.getElementById('incDesc').value.trim();
+  const amt=parseFloat(document.getElementById('incAmt').value);
+  const date=document.getElementById('incomeDate').value;
+  const cat=document.getElementById('incCat').value;
+  const note=document.getElementById('incNote').value.trim();
+  if(!desc||!amt||!date){toast('Please fill all required fields','error');return}
+  const inc=DB.income(); inc.unshift({id:uid(),desc,amt,date,cat,note}); DB.setIncome(inc);
+  closeModal('incomeModal');
+  ['incDesc','incAmt','incNote'].forEach(x=>document.getElementById(x).value='');
+  toast('Income added!'); renderIncome(); addPoints(10);
+}
+function deleteIncome(id){
+  DB.setIncome(DB.income().filter(i=>i.id!==id)); renderIncome(); toast('Deleted','error');
+}
+function renderIncome(){
+  const inc=DB.income(), mInc=inc.filter(i=>thisMonth(i.date));
+  document.getElementById('incMo').textContent=fmt(mInc.reduce((s,i)=>s+i.amt,0));
+  document.getElementById('incAll').textContent=fmt(inc.reduce((s,i)=>s+i.amt,0));
+  document.getElementById('incCnt').textContent=mInc.length;
+  const el=document.getElementById('incomeList');
+  if(!inc.length){el.innerHTML=emptyState('No income yet','Add your first income entry','ti-arrow-down-circle');return}
+  el.innerHTML='<div class="txn-list">'+inc.map(i=>`
+    <div class="txn">
+      <div class="txn-ico" style="background:${CAT_BG[i.cat]||'rgba(0,214,143,.1)'}">${CAT_EMOJI[i.cat]||'💰'}</div>
+      <div class="txn-info">
+        <div class="txn-name">${esc(i.desc)}</div>
+        <div class="txn-meta"><span class="txn-tag">${i.cat}</span>${fmtDate(i.date)}${i.note?` · <em style="opacity:.7">${esc(i.note)}</em>`:''}</div>
+      </div>
+      <div class="txn-amt inc">+${fmt(i.amt)}</div>
+      <button class="txn-del" onclick="deleteIncome('${i.id}')"><i class="ti ti-trash"></i></button>
+    </div>`).join('')+'</div>';
+}
+
+/* ═══════ EXPENSES ═══════ */
+function saveExpense(){
+  const desc=document.getElementById('expDesc').value.trim();
+  const amt=parseFloat(document.getElementById('expAmt').value);
+  const date=document.getElementById('expDate').value;
+  const cat=document.getElementById('expCat').value;
+  const note=document.getElementById('expNote').value.trim();
+  if(!desc||!amt||!date){toast('Please fill all required fields','error');return}
+  const exps=DB.expenses(); exps.unshift({id:uid(),desc,amt,date,cat,note}); DB.setExpenses(exps);
+  closeModal('expenseModal');
+  ['expDesc','expAmt','expNote'].forEach(x=>document.getElementById(x).value='');
+  toast('Expense recorded!'); renderExpenses(); populateExpCatFilter(); addPoints(5);
+}
+function deleteExpense(id){
+  DB.setExpenses(DB.expenses().filter(e=>e.id!==id)); renderExpenses(); toast('Deleted','error');
+}
+function openEditExpense(id){
+  const e=DB.expenses().find(x=>x.id===id); if(!e) return;
+  document.getElementById('editExpId').value=e.id;
+  document.getElementById('editExpDesc').value=e.desc;
+  document.getElementById('editExpAmt').value=e.amt;
+  document.getElementById('editExpDate').value=e.date;
+  document.getElementById('editExpCat').value=e.cat;
+  openModal('editExpModal');
+}
+function updateExpense(){
+  const id=document.getElementById('editExpId').value;
+  const exps=DB.expenses(); const idx=exps.findIndex(x=>x.id===id);
+  if(idx<0) return;
+  exps[idx]={...exps[idx], desc:document.getElementById('editExpDesc').value, amt:parseFloat(document.getElementById('editExpAmt').value), date:document.getElementById('editExpDate').value, cat:document.getElementById('editExpCat').value};
+  DB.setExpenses(exps); closeModal('editExpModal'); toast('Updated!'); renderExpenses();
+}
+function populateExpCatFilter(){
+  const el=document.getElementById('expCatFilter'); const cur=el.value;
+  const cats=[...new Set(DB.expenses().map(e=>e.cat))];
+  el.innerHTML='<option value="">All categories</option>'+cats.map(c=>`<option${c===cur?' selected':''}>${c}</option>`).join('');
+}
+function renderExpenses(){
+  const filterCat=document.getElementById('expCatFilter').value;
+  const searchQ=(document.getElementById('expSearch').value||'').toLowerCase();
+  const me=DB.expenses().filter(e=>thisMonth(e.date));
+  document.getElementById('expMo').textContent=fmt(me.reduce((s,e)=>s+e.amt,0));
+  document.getElementById('expCnt').textContent=me.length;
+  const ct={}; me.forEach(e=>ct[e.cat]=(ct[e.cat]||0)+e.amt);
+  const top=Object.entries(ct).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('expTop').textContent=top?`${CAT_EMOJI[top[0]]||'📦'} ${top[0]}`:'—';
+  let filtered=DB.expenses();
+  if(filterCat) filtered=filtered.filter(e=>e.cat===filterCat);
+  if(searchQ) filtered=filtered.filter(e=>e.desc.toLowerCase().includes(searchQ)||e.cat.toLowerCase().includes(searchQ));
+  const tbody=document.getElementById('expTableBody');
+  const empty=document.getElementById('expEmptyState');
+  document.getElementById('expTable').style.display=filtered.length?'':'none';
+  if(!filtered.length){empty.innerHTML=emptyState('No expenses found','Try a different search or category','ti-receipt-2');return}
+  empty.innerHTML='';
+  tbody.innerHTML=filtered.map(e=>`
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:9px"><div style="width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:${CAT_BG[e.cat]};font-size:17px;flex-shrink:0">${CAT_EMOJI[e.cat]||'📦'}</div><div><div style="font-weight:700;font-size:13.5px">${esc(e.desc)}</div>${e.note?`<div style="font-size:11px;color:var(--text3)">${esc(e.note)}</div>`:''}</div></div></td>
+      <td><span class="txn-tag">${e.cat}</span></td>
+      <td style="color:var(--text2);font-size:13px">${fmtDate(e.date)}</td>
+      <td style="color:var(--red);font-weight:800">−${fmt(e.amt)}</td>
+      <td><div style="display:flex;gap:.35rem"><button class="btn btn-icon btn-xs" onclick="openEditExpense('${e.id}')" title="Edit"><i class="ti ti-pencil" style="font-size:13px"></i></button><button class="btn btn-icon btn-xs" onclick="deleteExpense('${e.id}')" title="Delete" style="color:var(--red)"><i class="ti ti-trash" style="font-size:13px"></i></button></div></td>
+    </tr>`).join('');
+}
+
+/* ═══════ GOALS ═══════ */
+function saveGoal(){
+  const name=document.getElementById('gName').value.trim();
+  const target=parseFloat(document.getElementById('gTarget').value);
+  const emoji=document.getElementById('gEmoji').value.trim()||'🎯';
+  const deadline=document.getElementById('gDeadline').value;
+  const desc=document.getElementById('gDesc').value.trim();
+  if(!name||!target){toast('Please fill required fields','error');return}
+  const goals=DB.goals(); goals.push({id:uid(),name,target,saved:0,emoji,deadline,desc,ci:goals.length%6,created:new Date().toISOString()});
+  DB.setGoals(goals); closeModal('goalModal');
+  ['gName','gTarget','gEmoji','gDeadline','gDesc'].forEach(x=>document.getElementById(x).value='');
+  toast('Goal created! 🎯'); renderGoals(); addPoints(20);
+}
+function openAddSavings(id){ document.getElementById('savGoalId').value=id; document.getElementById('savAmt').value=''; openModal('savingsModal'); }
+function addSavings(){
+  const id=document.getElementById('savGoalId').value;
+  const amt=parseFloat(document.getElementById('savAmt').value);
+  if(!amt||amt<=0){toast('Enter valid amount','error');return}
+  const goals=DB.goals(); const g=goals.find(x=>x.id===id); if(!g) return;
+  g.saved=Math.min(g.saved+amt,g.target);
+  DB.setGoals(goals); closeModal('savingsModal');
+  toast(g.saved>=g.target?'🎉 Goal completed!':'Savings added!'); renderGoals(); addPoints(15);
+}
+function deleteGoal(id){ if(!confirm('Delete this goal?')) return; DB.setGoals(DB.goals().filter(g=>g.id!==id)); renderGoals(); toast('Deleted','error'); }
+function renderGoals(){
+  const goals=DB.goals(); const el=document.getElementById('goalsList');
+  if(!goals.length){el.innerHTML='<div style="grid-column:1/-1">'+emptyState('No goals yet','Create a savings goal to stay motivated','ti-target')+'</div>';return}
+  el.innerHTML=goals.map(g=>{
+    const p=g.target?Math.min(Math.round((g.saved/g.target)*100),100):0;
+    const grad=GOAL_GRADS[g.ci!==undefined?g.ci:0];
+    const done=p>=100;
+    const dLeft=g.deadline?Math.ceil((new Date(g.deadline)-now)/(86400000)):null;
+    return `<div class="goal-card">
+      <div class="goal-card-shine" style="background:${done?'#00D68F':'#8B5CF6'}"></div>
+      <div class="goal-top">
+        <div class="goal-emo">${g.emoji}</div>
+        <div style="flex:1;margin:0 .6rem">
+          <div class="goal-name">${esc(g.name)}</div>
+          <div class="goal-sub">${fmt(g.saved)} of ${fmt(g.target)}</div>
+          ${g.desc?`<div class="goal-sub" style="margin-top:2px;font-style:italic">${esc(g.desc)}</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          ${done?'<span class="badge b-green"><i class="ti ti-check" style="font-size:10px"></i>Done!</span>':`<span class="badge b-blue">${p}%</span>`}
+          <button class="btn btn-icon" onclick="deleteGoal('${g.id}')" style="width:28px;height:28px;border-radius:7px;font-size:13px;color:var(--red)"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>
+      <div class="prog-wrap" style="margin:.6rem 0"><div class="prog-fill" style="width:${p}%;background:${grad}"></div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--text2)">${done?'🎉 Completed!':fmt(g.target-g.saved)+' to go'}</div>
+          ${dLeft!==null&&!done?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${dLeft>0?dLeft+' days left':'⚠️ Deadline passed'}</div>`:''}
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openAddSavings('${g.id}')" ${done?'disabled style="opacity:.5"':''}>
+          <i class="ti ti-plus"></i>Add savings
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══════ DASHBOARD ═══════ */
+function renderDashboard(){
+  const inc=DB.income(), exps=DB.expenses(), goals=DB.goals();
+  const mI=inc.filter(i=>thisMonth(i.date)).reduce((s,i)=>s+i.amt,0);
+  const mE=exps.filter(e=>thisMonth(e.date)).reduce((s,e)=>s+e.amt,0);
+  const sav=mI-mE; const sp=mI>0?Math.min(Math.round(((Math.max(sav,0))/mI)*100),100):0;
+  const aGoals=goals.filter(g=>g.saved<g.target).length;
+  document.getElementById('wbanner').style.display=(inc.length+exps.length>0)?'none':'';
+  document.getElementById('dashCatMonth').textContent=FULL_MONTHS[CM];
+  document.getElementById('dashMetrics').innerHTML=`
+    <div class="mc"><div class="mc-stripe" style="background:linear-gradient(90deg,#00D68F,#A8E63C)"></div><div class="mc-glow" style="background:#00D68F"></div><div class="mc-label" style="color:var(--g3)"><i class="ti ti-arrow-down-circle" style="color:var(--g1)"></i>Monthly Income</div><div class="mc-value" style="color:var(--g1)">${fmt(mI)}</div><div class="mc-sub pos"><i class="ti ti-calendar"></i>This month</div></div>
+    <div class="mc"><div class="mc-stripe" style="background:linear-gradient(90deg,var(--red),#FF8C94)"></div><div class="mc-glow" style="background:var(--red)"></div><div class="mc-label"><i class="ti ti-receipt-2" style="color:var(--red)"></i>Total Expenses</div><div class="mc-value" style="color:var(--red)">${fmt(mE)}</div><div class="mc-sub ${mE>mI?'neg':''}"><i class="ti ti-calendar"></i>This month</div></div>
+    <div class="mc"><div class="mc-stripe" style="background:linear-gradient(90deg,var(--teal),var(--blue))"></div><div class="mc-glow" style="background:var(--teal)"></div><div class="mc-label"><i class="ti ti-piggy-bank" style="color:var(--teal)"></i>Net Savings</div><div class="mc-value" style="color:var(--teal)">${fmt(Math.abs(sav))}</div><div class="mc-sub ${sav>=0?'pos':'neg'}">${sav>=0?'<i class="ti ti-trending-up"></i>':'<i class="ti ti-trending-down"></i>'}${sp}% saved</div></div>
+    <div class="mc"><div class="mc-stripe" style="background:linear-gradient(90deg,var(--purple),var(--pink))"></div><div class="mc-glow" style="background:var(--purple)"></div><div class="mc-label"><i class="ti ti-target" style="color:var(--purple)"></i>Active Goals</div><div class="mc-value" style="color:var(--purple)">${aGoals}</div><div class="mc-sub"><i class="ti ti-list"></i>${goals.length} total</div></div>`;
+  // cat bars
+  const ct={}; exps.filter(e=>thisMonth(e.date)).forEach(e=>ct[e.cat]=(ct[e.cat]||0)+e.amt);
+  const sorted=Object.entries(ct).sort((a,b)=>b[1]-a[1]);
+  const cEl=document.getElementById('dashCatBars');
+  if(!sorted.length){cEl.innerHTML=emptyState('No spending yet','Add expenses to see breakdown','ti-chart-donut-3');return}
+  const maxA=sorted[0][1];
+  cEl.innerHTML=sorted.map(([cat,amt])=>`
+    <div class="cbar"><div class="cdot" style="background:${CAT_COLOR[cat]||'#94A3B8'}"></div>
+    <div class="clab">${CAT_EMOJI[cat]||'📦'} ${cat}</div>
+    <div class="cbar-wrap"><div class="cbar-fill" style="width:${Math.round((amt/maxA)*100)}%;background:${CAT_COLOR[cat]||'#94A3B8'}"></div></div>
+    <div class="camt">${fmt(amt)}</div></div>`).join('');
+  // ring
+  const bEl=document.getElementById('dashBudgetRing');
+  if(mI===0){bEl.innerHTML=emptyState('Add income first','Track income to see budget health','ti-wallet');return}
+  const spPct=Math.min(Math.round((mE/mI)*100),100);
+  const rc=spPct>90?'var(--red)':spPct>70?'var(--amber)':'var(--g1)';
+  const C=2*Math.PI*52, sd=C*(spPct/100);
+  bEl.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;padding:.5rem 0;gap:.75rem">
+    <div style="position:relative;width:130px;height:130px">
+      <svg width="130" height="130" viewBox="0 0 130 130">
+        <circle cx="65" cy="65" r="52" fill="none" stroke="var(--bg2)" stroke-width="11"/>
+        <circle cx="65" cy="65" r="52" fill="none" stroke="${rc}" stroke-width="11"
+          stroke-dasharray="${sd} ${C}" stroke-linecap="round" transform="rotate(-90,65,65)"
+          style="transition:stroke-dasharray .9s;filter:drop-shadow(0 0 6px ${rc})"/>
+      </svg>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div style="font-family:'Fraunces',serif;font-size:27px;font-weight:700;color:${rc}">${spPct}%</div>
+        <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px">used</div>
+      </div>
+    </div>
+    <div style="width:100%">
+      ${[['ti-arrow-down-circle','Income',fmt(mI),'var(--g1)'],['ti-receipt-2','Spent',fmt(mE),'var(--red)'],['ti-piggy-bank','Remaining',fmt(Math.max(sav,0)),sav>=0?'var(--teal)':'var(--red)']].map(([i,l,v,c])=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:.45rem 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:13px;color:var(--text2);display:flex;align-items:center;gap:6px"><i class="ti ${i}" style="color:${c}"></i>${l}</span>
+        <span style="font-size:13.5px;font-weight:800;color:${c}">${v}</span>
+      </div>`).join('')}
+    </div>
+  </div>`;
+  // recent
+  const all=[...inc.map(i=>({...i,type:'i'})),...exps.map(e=>({...e,type:'e'}))].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,10);
+  const rEl=document.getElementById('dashRecent');
+  if(!all.length){rEl.innerHTML=emptyState('No transactions yet','Add income or expenses to see them here','ti-clock');return}
+  rEl.innerHTML='<div class="txn-list">'+all.map(t=>`
+    <div class="txn">
+      <div class="txn-ico" style="background:${CAT_BG[t.cat]||'rgba(148,163,184,.1)'}">${CAT_EMOJI[t.cat]||(t.type==='i'?'💰':'💸')}</div>
+      <div class="txn-info"><div class="txn-name">${esc(t.desc)}</div><div class="txn-meta"><span class="txn-tag">${t.cat}</span>${fmtDate(t.date)}</div></div>
+      <div class="txn-amt ${t.type==='i'?'inc':'exp'}">${t.type==='i'?'+':'−'}${fmt(t.amt)}</div>
+    </div>`).join('')+'</div>';
+}
+
+/* ═══════ REPORTS ═══════ */
+function renderReports(){
+  const inc=DB.income(), exps=DB.expenses(), goals=DB.goals();
+  const tI=inc.reduce((s,i)=>s+i.amt,0), tE=exps.reduce((s,e)=>s+e.amt,0);
+  const mI=inc.filter(i=>thisMonth(i.date)).reduce((s,i)=>s+i.amt,0);
+  const mE=exps.filter(e=>thisMonth(e.date)).reduce((s,e)=>s+e.amt,0);
+  document.getElementById('repMetrics').innerHTML=`
+    <div class="mc"><div class="mc-stripe" style="background:linear-gradient(90deg,var(--g1),var(--lime))"></div><div class="mc-glow" style="background:var(--g1)"></div><div class="mc-label"><i class="ti ti-coins" style="color:var(--g1)"></i>All-time Income</div><div class="mc-value" style="color:var(--g1)">${fmt(tI)}</div></div>
+    <div class="mc"><div class="mc-stripe" style="background:linear-gradient(90deg,var(--red),#FF8C94)"></div><div class="mc-glow" style="background:var(--red)"></div><div class="mc-label"><i class="ti ti-cash" style="color:var(--red)"></i>All-time Expenses</div><div class="mc-value" style="color:var(--red)">${fmt(tE)}</div></div>
+    <div class="mc"><div class="mc-stripe" style="background:linear-gradient(90deg,var(--teal),var(--blue))"></div><div class="mc-glow" style="background:var(--teal)"></div><div class="mc-label"><i class="ti ti-safe" style="color:var(--teal)"></i>Net Balance</div><div class="mc-value" style="color:var(--teal)">${fmt(tI-tE)}</div></div>
+    <div class="mc"><div class="mc-stripe" style="background:linear-gradient(90deg,var(--purple),var(--pink))"></div><div class="mc-glow" style="background:var(--purple)"></div><div class="mc-label"><i class="ti ti-trophy" style="color:var(--purple)"></i>Goals Done</div><div class="mc-value" style="color:var(--purple)">${goals.filter(g=>g.saved>=g.target).length}/${goals.length}</div></div>`;
+  const labels=[], iD=[], eD=[];
+  for(let i=5;i>=0;i--){const d=new Date(CY,CM-i,1),yr=d.getFullYear(),mo=d.getMonth();labels.push(MONTHS[mo]);iD.push(inc.filter(x=>{const dt=new Date(x.date);return dt.getFullYear()===yr&&dt.getMonth()===mo}).reduce((s,x)=>s+x.amt,0));eD.push(exps.filter(x=>{const dt=new Date(x.date);return dt.getFullYear()===yr&&dt.getMonth()===mo}).reduce((s,x)=>s+x.amt,0));}
+  const cc=chartColors();
+  destroyChart('trend'); destroyChart('pie');
+  activeCharts['trend']=new Chart(document.getElementById('trendChart'),{type:'bar',data:{labels,datasets:[{label:'Income',data:iD,backgroundColor:'rgba(0,214,143,.75)',borderRadius:6,borderSkipped:false},{label:'Expenses',data:eD,backgroundColor:'rgba(240,68,56,.65)',borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:cc.grid},ticks:{color:cc.tick,font:{size:11}}},y:{grid:{color:cc.grid},ticks:{color:cc.tick,font:{size:11},callback:v=>'₹'+(v>=1000?(v/1000).toFixed(0)+'k':v)}}}}});
+  const ct={}; exps.forEach(e=>ct[e.cat]=(ct[e.cat]||0)+e.amt); const cats=Object.keys(ct);
+  if(cats.length){activeCharts['pie']=new Chart(document.getElementById('pieChart'),{type:'doughnut',data:{labels:cats,datasets:[{data:cats.map(c=>ct[c]),backgroundColor:cats.map(c=>CAT_COLOR[c]||'#94A3B8'),borderWidth:0,hoverOffset:10}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:{color:cc.tick,font:{size:11},boxWidth:10,padding:10}},tooltip:{callbacks:{label:c=>' ₹'+Math.round(c.parsed).toLocaleString('en-IN')}}}}});}
+  const avgArr=eD.filter(v=>v>0); const avg=avgArr.length?Math.round(avgArr.reduce((a,b)=>a+b)/avgArr.length):0;
+  document.getElementById('repStats').innerHTML=[
+    ['ti-calendar-month','This month income',fmt(mI),'var(--g1)'],
+    ['ti-receipt-2','This month expenses',fmt(mE),'var(--red)'],
+    ['ti-piggy-bank','This month savings',fmt(mI-mE),(mI-mE)>=0?'var(--g1)':'var(--red)'],
+    ['ti-chart-line','Avg monthly expenses',fmt(avg),''],
+    ['ti-list-numbers','Total transactions',(inc.length+exps.length)+'',''],
+    ['ti-trophy','Goals completed',goals.filter(g=>g.saved>=g.target).length+'/'+goals.length,'var(--g1)'],
+  ].map(([ico,l,v,c])=>`<div class="report-stat" style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid var(--border)"><span style="font-size:13px;color:var(--text2);display:flex;align-items:center;gap:6px"><i class="ti ${ico}" style="color:var(--g1)"></i>${l}</span><span style="font-size:14px;font-weight:800;${c?'color:'+c:''}">${v}</span></div>`).join('');
+}
+function exportPDF(){
+  toast('PDF export ready! (In production, this would generate a real PDF report)','info');
+}
+
+/* ═══════ AI ASSISTANT ═══════ */
+const AI_RESPONSES = {
+  default: (inc,exps) => {
+    const mE=exps.filter(e=>thisMonth(e.date)).reduce((s,e)=>s+e.amt,0);
+    const mI=inc.filter(i=>thisMonth(i.date)).reduce((s,i)=>s+i.amt,0);
+    const ct={}; exps.filter(e=>thisMonth(e.date)).forEach(e=>ct[e.cat]=(ct[e.cat]||0)+e.amt);
+    const top=Object.entries(ct).sort((a,b)=>b[1]-a[1])[0];
+    if(!mI&&!mE) return "I don't see any financial data yet! Start by adding your income and a few expenses. Once you do, I can give you detailed insights, spending analysis, and personalized savings tips. 💚";
+    const savPct=mI>0?Math.round(((mI-mE)/mI)*100):0;
+    return `Here's your financial snapshot for this month:\n\n📊 **Income:** ₹${Math.round(mI).toLocaleString('en-IN')}\n💸 **Expenses:** ₹${Math.round(mE).toLocaleString('en-IN')}\n💰 **Savings rate:** ${Math.max(savPct,0)}%\n${top?`🔥 **Top spend:** ${top[0]} (₹${Math.round(top[1]).toLocaleString('en-IN')})\n`:''}\n${savPct>=30?'✅ Great work! You\'re saving well above the 30% target.':savPct>=10?'⚠️ You\'re saving, but try to push toward 30% this month.':'🚨 Your savings are low. Let\'s find areas to cut back.'}\n\nAsk me anything specific about your finances!`;
+  },
+  analyse: (inc,exps) => {
+    const ct={}; exps.filter(e=>thisMonth(e.date)).forEach(e=>ct[e.cat]=(ct[e.cat]||0)+e.amt);
+    const total=Object.values(ct).reduce((a,b)=>a+b,0);
+    if(!total) return "No expenses recorded this month yet. Add some expenses and I'll give you a detailed category-wise analysis! 📊";
+    const sorted=Object.entries(ct).sort((a,b)=>b[1]-a[1]);
+    return `**Category Analysis for ${FULL_MONTHS[CM]}:**\n\n${sorted.map(([cat,amt])=>`${CAT_EMOJI[cat]||'📦'} **${cat}:** ₹${Math.round(amt).toLocaleString('en-IN')} (${Math.round((amt/total)*100)}%)`).join('\n')}\n\n**💡 Insight:** Your highest expense is **${sorted[0][0]}**. ${sorted[0][0]==='Food'?'Consider meal prepping to reduce food costs by 20-30%.':sorted[0][0]==='Entertainment'?'Try free entertainment options like campus events or free streaming trials.':'Look for ways to optimize this category.'}`;
+  },
+  save: (inc,exps) => {
+    const mE=exps.filter(e=>thisMonth(e.date)).reduce((s,e)=>s+e.amt,0);
+    const mI=inc.filter(i=>thisMonth(i.date)).reduce((s,i)=>s+i.amt,0);
+    const potential=Math.round(mE*0.15);
+    return `**Savings Opportunities for You:**\n\n🍜 **Food:** Pack lunch 3x/week → save ~₹${Math.round(mE*0.08).toLocaleString('en-IN')}/mo\n🎮 **Entertainment:** Use student discounts → save ~₹${Math.round(mE*0.05).toLocaleString('en-IN')}/mo\n🚌 **Travel:** Monthly pass vs daily ticket → save ~₹${Math.round(mE*0.03).toLocaleString('en-IN')}/mo\n📚 **Education:** Share subscriptions with friends → save up to ₹500/mo\n\n**Total potential savings: ~₹${potential.toLocaleString('en-IN')}/month**\n\n💡 Even saving ₹${Math.round(potential/2).toLocaleString('en-IN')} extra per month = ₹${Math.round(potential/2*12).toLocaleString('en-IN')} per year!`;
+  },
+  predict: (inc,exps) => {
+    const months=[]; for(let i=3;i>=1;i--){const d=new Date(CY,CM-i,1),yr=d.getFullYear(),mo=d.getMonth();months.push(exps.filter(x=>{const dt=new Date(x.date);return dt.getFullYear()===yr&&dt.getMonth()===mo}).reduce((s,x)=>s+x.amt,0));}
+    const avg=months.filter(v=>v>0).reduce((a,b)=>a+b,0)/Math.max(months.filter(v=>v>0).length,1);
+    const pred=Math.round(avg*1.03);
+    if(!avg) return "I need at least 1 month of expense data to predict future spending. Keep tracking and I'll get smarter! 🔮";
+    return `**Next Month Expense Prediction:**\n\n📈 Based on your past spending patterns:\n\n🔮 **Predicted total: ₹${pred.toLocaleString('en-IN')}**\n\nBreakdown estimate:\n• Fixed costs (rent, utilities): ~${Math.round(pred*0.3).toLocaleString('en-IN')}\n• Food & dining: ~₹${Math.round(pred*0.35).toLocaleString('en-IN')}\n• Transport: ~₹${Math.round(pred*0.12).toLocaleString('en-IN')}\n• Entertainment: ~₹${Math.round(pred*0.1).toLocaleString('en-IN')}\n• Other: ~₹${Math.round(pred*0.13).toLocaleString('en-IN')}\n\n💡 **Tip:** Budget ₹${Math.round(pred*1.05).toLocaleString('en-IN')} to have a small buffer.`;
+  },
+};
+function initChat(){
+  const msgs=document.getElementById('chatMessages');
+  if(msgs.innerHTML) return;
+  addChatMsg('ai',`Hi ${DB.profile().name||'there'}! 👋 I'm your AI Budget Assistant.\n\nI can analyse your spending habits, suggest savings opportunities, predict expenses, and give personalized financial advice.\n\nTry one of the quick suggestions above, or just ask me anything! 💚`);
+}
+function addChatMsg(type,text){
+  const msgs=document.getElementById('chatMessages');
+  const el=document.createElement('div');
+  el.className='chat-msg '+type;
+  el.innerHTML=text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+  msgs.appendChild(el); msgs.scrollTop=msgs.scrollHeight;
+}
+function showTyping(){
+  const msgs=document.getElementById('chatMessages');
+  const el=document.createElement('div'); el.id='typingIndicator'; el.className='chat-msg ai';
+  el.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
+  msgs.appendChild(el); msgs.scrollTop=msgs.scrollHeight;
+}
+function hideTyping(){ document.getElementById('typingIndicator')?.remove(); }
+function askAI(q){ document.getElementById('chatInput').value=q; sendChat(); }
+function sendChat(){
+  const inp=document.getElementById('chatInput'); const q=inp.value.trim(); if(!q) return;
+  addChatMsg('user',q); inp.value=''; showTyping();
+  setTimeout(()=>{
+    hideTyping();
+    const inc=DB.income(), exps=DB.expenses();
+    let resp;
+    const lq=q.toLowerCase();
+    if(lq.includes('analys')||lq.includes('breakdown')||lq.includes('spending')) resp=AI_RESPONSES.analyse(inc,exps);
+    else if(lq.includes('save')||lq.includes('saving')||lq.includes('cut')) resp=AI_RESPONSES.save(inc,exps);
+    else if(lq.includes('predict')||lq.includes('next month')||lq.includes('forecast')) resp=AI_RESPONSES.predict(inc,exps);
+    else if(lq.includes('waste')||lq.includes('biggest')||lq.includes('unnecessary')){
+      const ct={}; exps.filter(e=>thisMonth(e.date)).forEach(e=>ct[e.cat]=(ct[e.cat]||0)+e.amt);
+      const top=Object.entries(ct).sort((a,b)=>b[1]-a[1])[0];
+      resp=top?`Your biggest expense this month is **${top[0]}** at **₹${Math.round(top[1]).toLocaleString('en-IN')}**. This represents ${Math.round((top[1]/Object.values(ct).reduce((a,b)=>a+b,0))*100)}% of your spending.\n\n💡 Reducing this by just 20% would save you ₹${Math.round(top[1]*0.2).toLocaleString('en-IN')} this month!`:'No expenses recorded yet! Start tracking to identify waste.';
+    }
+    else if(lq.includes('budget plan')||lq.includes('budget')){
+      const mI=inc.filter(i=>thisMonth(i.date)).reduce((s,i)=>s+i.amt,0);
+      resp=mI>0?`**Personalized Budget Plan for ₹${Math.round(mI).toLocaleString('en-IN')}/month:**\n\n📌 Following the 50/30/20 rule:\n\n🏠 **Needs (50%):** ₹${Math.round(mI*0.5).toLocaleString('en-IN')} — Food, travel, essential bills\n🎮 **Wants (30%):** ₹${Math.round(mI*0.3).toLocaleString('en-IN')} — Entertainment, shopping, extras\n💰 **Savings (20%):** ₹${Math.round(mI*0.2).toLocaleString('en-IN')} — Goals, emergency fund\n\n✅ Set up a savings goal and transfer ₹${Math.round(mI*0.2).toLocaleString('en-IN')} at the start of each month!`:'Add your income first so I can build a personalized budget plan for you!';
+    }
+    else resp=AI_RESPONSES.default(inc,exps);
+    addChatMsg('ai',resp);
+  },1200+Math.random()*600);
+}
+function renderAI(){
+  initChat();
+  const inc=DB.income(), exps=DB.expenses();
+  const mE=exps.filter(e=>thisMonth(e.date)).reduce((s,e)=>s+e.amt,0);
+  const mI=inc.filter(i=>thisMonth(i.date)).reduce((s,i)=>s+i.amt,0);
+  const ct={}; exps.filter(e=>thisMonth(e.date)).forEach(e=>ct[e.cat]=(ct[e.cat]||0)+e.amt);
+  const sorted=Object.entries(ct).sort((a,b)=>b[1]-a[1]);
+  const savPct=mI>0?Math.round(((mI-mE)/mI)*100):0;
+  const tips=[];
+  if(!mI&&!mE){tips.push({icon:'ti-info-circle',color:'var(--blue)',bg:'var(--blue-bg)',title:'Get started',body:'Add income and expenses to unlock AI-powered insights and recommendations.'});}
+  else {
+    if(savPct>=25)tips.push({icon:'ti-trophy',color:'var(--g1)',bg:'rgba(0,214,143,.1)',title:'Excellent savings!',body:`You're saving ${savPct}% of income. That puts you in the top 20% of students!`});
+    else tips.push({icon:'ti-trending-up',color:'var(--amber)',bg:'var(--amber-bg)',title:'Boost your savings',body:`Current savings rate: ${Math.max(savPct,0)}%. Aim for 20%+ by reducing your top spending category.`});
+    if(sorted.length)tips.push({icon:'ti-flame',color:'var(--red)',bg:'var(--red-bg)',title:'Top spending alert',body:`${sorted[0][0]} is your biggest expense at ${fmt(sorted[0][1])}. Consider a weekly limit.`});
+    if(DB.goals().filter(g=>g.saved<g.target).length>0)tips.push({icon:'ti-target',color:'var(--purple)',bg:'var(--purple-bg)',title:'Goal momentum',body:`Add ₹${fmt(Math.round((DB.goals().filter(g=>g.saved<g.target)[0]?.target-DB.goals().filter(g=>g.saved<g.target)[0]?.saved)/4)||0).slice(1)}/week to reach your top goal on time.`});
+  }
+  document.getElementById('aiInsightCards').innerHTML=tips.map(t=>`
+    <div class="insight" style="border-left:3px solid ${t.color}">
+      <div class="insight-ico" style="background:${t.bg}"><i class="ti ${t.icon}" style="color:${t.color}"></i></div>
+      <div><div class="insight-title">${t.title}</div><div class="insight-body">${t.body}</div></div>
+    </div>`).join('');
+}
+
+/* ═══════ REWARDS ═══════ */
+const CHALLENGES=[
+  {id:'c1',title:'No-Spend Day',desc:'Go one full day without spending anything',pts:50,icon:'🧘',days:1},
+  {id:'c2',title:'Cook at Home',desc:'Avoid eating out for 3 days this week',pts:75,icon:'🍳',days:3},
+  {id:'c3',title:'₹100 Daily Limit',desc:'Keep daily expenses under ₹100',pts:60,icon:'💯',days:1},
+  {id:'c4',title:'Save ₹500',desc:'Add ₹500 to any savings goal',pts:80,icon:'💰',days:7},
+  {id:'c5',title:'Track Everything',desc:'Log every expense for 7 days',pts:100,icon:'📝',days:7},
+  {id:'c6',title:'Walk Instead',desc:'Use walking or cycling instead of transport today',pts:40,icon:'🚶',days:1},
+];
+const BADGES_DEF=[
+  {id:'first_income',icon:'💵',name:'First Rupee',desc:'Added first income',condition:d=>d.income.length>0},
+  {id:'first_expense',icon:'📝',name:'Tracker',desc:'Logged first expense',condition:d=>d.expenses.length>0},
+  {id:'first_goal',icon:'🎯',name:'Goal Setter',desc:'Created first goal',condition:d=>d.goals.length>0},
+  {id:'goal_done',icon:'🏆',name:'Achiever',desc:'Completed a savings goal',condition:d=>d.goals.some(g=>g.saved>=g.target)},
+  {id:'saver_20',icon:'💰',name:'Saver 20%',desc:'Saved 20%+ of income in a month',condition:d=>{const mI=d.income.filter(i=>thisMonth(i.date)).reduce((s,i)=>s+i.amt,0);const mE=d.expenses.filter(e=>thisMonth(e.date)).reduce((s,e)=>s+e.amt,0);return mI>0&&((mI-mE)/mI)>=0.2}},
+  {id:'exp_5',icon:'📊',name:'Data Nerd',desc:'Logged 5+ expenses',condition:d=>d.expenses.length>=5},
+  {id:'all_cats',icon:'🌈',name:'Well Rounded',desc:'Tracked 5+ expense categories',condition:d=>new Set(d.expenses.map(e=>e.cat)).size>=5},
+  {id:'streak_7',icon:'🔥',name:'Week Streak',desc:'Logged expenses 7 days in a row',condition:()=>false},
+  {id:'ai_user',icon:'🤖',name:'AI Explorer',desc:'Asked the AI assistant',condition:()=>localStorage.getItem('sbp_ai_used')==='1'},
+];
+function addPoints(pts){
+  const r=DB.rewards(); r.points=(r.points||0)+pts; DB.setRewards(r);
+  checkBadges();
+}
+function checkBadges(){
+  const r=DB.rewards(); const data={income:DB.income(),expenses:DB.expenses(),goals:DB.goals()};
+  BADGES_DEF.forEach(b=>{ if(!r.completed?.includes(b.id)&&b.condition(data)){r.completed=[...(r.completed||[]),b.id];toast(`🏅 Badge earned: ${b.name}!`);}});
+  DB.setRewards(r);
+}
+function renderRewards(){
+  checkBadges();
+  const r=DB.rewards();
+  const pts=r.points||0; const done=(r.completed||[]).length; const lvl=Math.floor(pts/100)+1;
+  document.getElementById('rewardMetrics').innerHTML=`
+    <div class="mc"><div class="mc-stripe" style="background:linear-gradient(90deg,#F59E0B,#EF4444)"></div><div class="mc-glow" style="background:#F59E0B"></div><div class="mc-label"><i class="ti ti-star" style="color:#F59E0B"></i>Total Points</div><div class="mc-value" style="color:#F59E0B">${pts}</div><div class="mc-sub">earned so far</div></div>
+    <div class="mc"><div class="mc-stripe" style="background:linear-gradient(90deg,var(--purple),var(--pink))"></div><div class="mc-glow" style="background:var(--purple)"></div><div class="mc-label"><i class="ti ti-award" style="color:var(--purple)"></i>Badges</div><div class="mc-value" style="color:var(--purple)">${done}/${BADGES_DEF.length}</div><div class="mc-sub">earned</div></div>
+    <div class="mc"><div class="mc-stripe" style="background:linear-gradient(90deg,var(--g1),var(--teal))"></div><div class="mc-glow" style="background:var(--g1)"></div><div class="mc-label"><i class="ti ti-trending-up" style="color:var(--g1)"></i>Level</div><div class="mc-value" style="color:var(--g1)">${lvl}</div><div class="mc-sub">${pts%100}/100 to next</div></div>`;
+  // challenges
+  const cl=document.getElementById('challengeList');
+  cl.innerHTML=CHALLENGES.map(c=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:.75rem 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:24px;width:42px;text-align:center">${c.icon}</div>
+      <div style="flex:1"><div style="font-size:14px;font-weight:700">${c.title}</div><div style="font-size:12px;color:var(--text3);margin-top:2px">${c.desc}</div></div>
+      <div style="text-align:right;flex-shrink:0">
+        <span class="badge b-amber">+${c.pts} pts</span>
+        <button class="btn btn-primary btn-xs" style="margin-top:4px;display:block" onclick="completeChallenge('${c.id}',${c.pts},'${c.title}')">Complete</button>
+      </div>
+    </div>`).join('');
+  // badges
+  const bg=document.getElementById('badgeGrid');
+  bg.innerHTML=BADGES_DEF.map(b=>`
+    <div class="badge-card ${!(r.completed||[]).includes(b.id)?'locked':''}">
+      <span class="badge-icon">${b.icon}</span>
+      <div class="badge-name">${b.name}</div>
+      <div class="badge-desc">${b.desc}</div>
+    </div>`).join('');
+  // leaderboard (simulated)
+  const lb=document.getElementById('leaderboard');
+  const userName=DB.profile().name||'You';
+  const leaders=[{name:userName,pts:pts,avatar:userName.charAt(0),isMe:true},{name:'Priya S.',pts:Math.max(pts+420,500),avatar:'P'},{name:'Rahul V.',pts:Math.max(pts+280,380),avatar:'R'},{name:'Anjali N.',pts:Math.max(pts+150,250),avatar:'A'},{name:'Arjun K.',pts:Math.max(pts+80,180),avatar:'K'}].sort((a,b)=>b.pts-a.pts);
+  const rankColors=['#F59E0B','#9CA3AF','#CD7C32','var(--text3)','var(--text3)'];
+  lb.innerHTML=leaders.map((l,i)=>`
+    <div class="leaderboard-row ${l.isMe?'style="background:rgba(0,214,143,.04)"':''}">
+      <div class="lb-rank" style="background:${rankColors[i]||'var(--bg2)'};color:${i<3?'#fff':'var(--text2)'};font-size:${i===0?'14':'12'}px">${i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`}</div>
+      <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--g1),var(--teal));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;flex-shrink:0">${l.avatar}</div>
+      <div style="flex:1"><div style="font-size:13.5px;font-weight:700">${l.name}${l.isMe?' <span class="badge b-green" style="font-size:10px">You</span>':''}</div></div>
+      <div style="font-size:14px;font-weight:800;color:var(--amber)">${l.pts} pts</div>
+    </div>`).join('');
+}
+function completeChallenge(id,pts,name){
+  addPoints(pts); toast(`✅ Challenge complete: ${name}! +${pts} pts`);
+  renderRewards();
+}
+
+/* ═══════ TIPS ═══════ */
+const TIPS_DATA=[
+  {num:'01',title:'The 50/30/20 Rule',body:'Allocate 50% of income to needs (food, transport), 30% to wants (entertainment, shopping), and 20% to savings. This simple framework works great for students.',tag:'Budgeting',tagColor:'b-green'},
+  {num:'02',title:'Track Every Rupee',body:'The habit of recording every expense, no matter how small, reveals surprising spending patterns. Most students overspend on small daily purchases like chai and snacks.',tag:'Tracking',tagColor:'b-blue'},
+  {num:'03',title:'Cook Your Own Food',body:'Cooking even 3-4 meals per week instead of ordering in can save ₹1500-3000 per month. That\'s ₹18,000-36,000 per year — a new phone or laptop!',tag:'Food',tagColor:'b-amber'},
+  {num:'04',title:'Use Student Discounts',body:'Always carry your college ID. Most streaming services, software, transportation, and even restaurants offer 10-50% student discounts. Ask before paying!',tag:'Savings',tagColor:'b-purple'},
+  {num:'05',title:'Emergency Fund First',body:'Before saving for anything else, build a small emergency fund of ₹5,000-10,000. This prevents you from taking unnecessary loans for unexpected expenses.',tag:'Savings',tagColor:'b-green'},
+  {num:'06',title:'Avoid Impulse Purchases',body:'Use the 24-hour rule: wait one full day before buying anything over ₹500. Most impulse purchases seem unnecessary the next day.',tag:'Mindset',tagColor:'b-teal'},
+  {num:'07',title:'Use Public Transport',body:'A monthly bus or metro pass often costs 40-60% less than paying per trip. If you commute daily, this one switch can save ₹500-1500 per month.',tag:'Transport',tagColor:'b-blue'},
+  {num:'08',title:'Share Subscriptions',body:'Split streaming, music, and software subscriptions with roommates or friends. Sharing 4 Netflix accounts costs just ₹75/month instead of ₹299.',tag:'Tech',tagColor:'b-pink'},
+  {num:'09',title:'Buy Used Textbooks',body:'Second-hand textbooks cost 30-70% less. Check seniors, library sales, and online platforms before buying new. Sell them after the semester.',tag:'Education',tagColor:'b-amber'},
+  {num:'10',title:'Set Savings Goals',body:'Saving without a purpose is hard. Set specific goals — "Save ₹15,000 for a laptop by March." Goals make saving motivating rather than painful.',tag:'Goals',tagColor:'b-purple'},
+  {num:'11',title:'Avoid Credit Debt',body:'Credit card interest rates can be 24-40% annually. If you use a credit card, pay the full balance every month. Minimum payments keep you in debt for years.',tag:'Debt',tagColor:'b-red'},
+  {num:'12',title:'Invest Even ₹500/month',body:'Starting SIP with just ₹500/month at age 20 could grow to ₹15+ lakhs by 45. Time is your biggest financial asset — start early, even small.',tag:'Investing',tagColor:'b-teal'},
+];
+function renderTips(){
+  document.getElementById('tipsList').innerHTML=TIPS_DATA.map(t=>`
+    <div class="tip-card">
+      <div class="tip-num">${t.num}</div>
+      <div class="tip-title">${t.title}</div>
+      <div class="tip-body">${t.body}</div>
+      <span class="badge ${t.tagColor} tip-tag">${t.tag}</span>
+    </div>`).join('');
+}
+
+/* ═══════ PROFILE ═══════ */
+function renderProfile(){
+  const p=DB.profile();
+  document.getElementById('profileName').textContent=p.name||'Student';
+  document.getElementById('profileCollege').textContent=p.college||'College not set';
+  document.getElementById('profName').value=p.name||'';
+  document.getElementById('profCollege').value=p.college||'';
+  document.getElementById('profCourse').value=p.course||'';
+  document.getElementById('profYear').value=p.year||'1st Year';
+  if(p.avatarUrl) document.getElementById('profileAvatar').innerHTML=`<img src="${p.avatarUrl}"><input type="file" id="avatarUpload" accept="image/*" style="display:none" onchange="uploadAvatar(this)">`;
+  // stats
+  const inc=DB.income(), exps=DB.expenses(), goals=DB.goals();
+  document.getElementById('profileStats').innerHTML=[
+    ['ti-coins','Total Income',fmt(inc.reduce((s,i)=>s+i.amt,0)),'var(--g1)'],
+    ['ti-receipt-2','Total Expenses',fmt(exps.reduce((s,e)=>s+e.amt,0)),'var(--red)'],
+    ['ti-target','Goals Created',goals.length,'var(--purple)'],
+    ['ti-trophy','Goals Done',goals.filter(g=>g.saved>=g.target).length,'var(--amber)'],
+    ['ti-star','Points Earned',DB.rewards().points||0,'#F59E0B'],
+  ].map(([i,l,v,c])=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem 0;border-bottom:1px solid var(--border)"><span style="font-size:13px;color:var(--text2);display:flex;align-items:center;gap:6px"><i class="ti ${i}" style="color:${c}"></i>${l}</span><span style="font-size:14px;font-weight:800;color:${c}">${v}</span></div>`).join('');
+  const earned=(DB.rewards().completed||[]);
+  const badgeList=document.getElementById('profileBadgeList');
+  const earnedBadges=BADGES_DEF.filter(b=>earned.includes(b.id));
+  badgeList.innerHTML=earnedBadges.length?earnedBadges.map(b=>`<div class="badge-card"><span class="badge-icon">${b.icon}</span><div class="badge-name">${b.name}</div></div>`).join(''):'<div style="grid-column:1/-1;font-size:13px;color:var(--text3);text-align:center;padding:1rem">No badges yet. Start tracking to earn them!</div>';
+  const pbadges=document.getElementById('profileBadges');
+  pbadges.innerHTML=earnedBadges.slice(0,4).map(b=>`<span class="ph-badge">${b.icon} ${b.name}</span>`).join('');
+}
+function saveProfile(){
+  const p=DB.profile();
+  p.name=document.getElementById('profName').value.trim()||'Student';
+  p.college=document.getElementById('profCollege').value.trim();
+  p.course=document.getElementById('profCourse').value.trim();
+  p.year=document.getElementById('profYear').value;
+  DB.setProfile(p); refreshSidebarUser();
+  toast('Profile saved!'); renderProfile();
+}
+function uploadAvatar(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const p=DB.profile(); p.avatarUrl=e.target.result; DB.setProfile(p);
+    document.getElementById('profileAvatar').innerHTML=`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"><input type="file" id="avatarUpload" accept="image/*" style="display:none" onchange="uploadAvatar(this)">`;
+    document.getElementById('sbAvatar').innerHTML=`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    toast('Photo updated!');
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ═══════ SETTINGS ═══════ */
+function renderSettings(){
+  const p=DB.profile();
+  const ts=document.getElementById('themeToggleSetting');
+  if(ts) ts.classList.toggle('on',isDark);
+  const cs=document.getElementById('currencySelect');
+  if(cs) cs.value=p.currency||'₹';
+  const bl=document.getElementById('budgetLimit');
+  if(bl) bl.value=p.budgetLimit||'';
+}
+function toggleThemeSetting(){ toggleTheme(); document.getElementById('themeToggleSetting').classList.toggle('on',isDark); }
+function saveCurrency(){ const p=DB.profile(); p.currency=document.getElementById('currencySelect').value; DB.setProfile(p); toast('Currency updated!'); }
+function saveBudgetLimit(){ const p=DB.profile(); p.budgetLimit=parseFloat(document.getElementById('budgetLimit').value)||0; DB.setProfile(p); toast('Budget limit saved!'); }
+function exportData(){
+  const data={income:DB.income(),expenses:DB.expenses(),goals:DB.goals(),profile:DB.profile(),rewards:DB.rewards(),exportedAt:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='student-budget-planner-backup.json'; a.click();
+  toast('Data exported!');
+}
+function importData(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      if(d.income) DB.setIncome(d.income);
+      if(d.expenses) DB.setExpenses(d.expenses);
+      if(d.goals) DB.setGoals(d.goals);
+      if(d.profile) DB.setProfile(d.profile);
+      if(d.rewards) DB.setRewards(d.rewards);
+      toast('Data imported successfully!'); renderDashboard();
+    }catch(err){ toast('Invalid backup file','error'); }
+  };
+  reader.readAsText(file);
+}
+function clearAllData(){
+  if(!confirm('This will permanently delete ALL your data. Are you sure?')) return;
+  ['income','expenses','goals','rewards'].forEach(k=>localStorage.removeItem('sbp_'+k));
+  toast('All data cleared','error'); renderDashboard();
+}
+
+/* ═══════ INIT ═══════ */
+populateExpCatFilter();
+renderDashboard();
+checkBadges();
+['expDate','incomeDate'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=new Date().toISOString().split('T')[0];});
+</script>
+</body>
+</html>
